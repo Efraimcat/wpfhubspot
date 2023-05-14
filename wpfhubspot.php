@@ -9,7 +9,7 @@
  * that starts the plugin.
  *
  * @link              https://efraim.cat
- * @since             1.0.1
+ * @since             1.0.2
  * @package           Wpfhubspot
  *
  * @wordpress-plugin
@@ -30,7 +30,7 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-define( 'WPFHUBSPOT_VERSION', '1.0.1' );
+define( 'WPFHUBSPOT_VERSION', '1.0.2' );
 
 function activate_wpfhubspot() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wpfhubspot-activator.php';
