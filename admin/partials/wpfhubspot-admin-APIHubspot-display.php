@@ -22,8 +22,8 @@ if ( ! defined( 'ABSPATH' ) ) {
   <?php settings_errors(); ?>
   <form method="POST" action="options.php">
     <?php
-    settings_fields('wpfunos_APIHubspot_settings');
-    do_settings_sections('wpfunos_APIHubspot_settings');
+    settings_fields('wpfhubspot_APIHubspot_settings');
+    do_settings_sections('wpfhubspot_APIHubspot_settings');
     ?>
     <hr />
     <?php submit_button(); ?>

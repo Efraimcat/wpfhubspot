@@ -35,8 +35,6 @@ add_settings_field(
   'wpfhubspot_APIHubspot_section',
   array('type' => 'input','subtype' => 'password','id' => 'wpfhubspot_APIHubspotKeyHubspot','name' => 'wpfhubspot_APIHubspotKeyHubspot','required' => 'true','get_options_list' => '','value_type' => 'normal','wp_data' => 'option')
 );
-// APIHubspotActionsUser (email)
-// APIHubspotExlcudedUsers (email)
 add_settings_field(
   'wpfhubspot_APIHubspotActionsUser',
   'Usuario asignado a las tareas <h6 style="font-style: italic;font-weight: 400;font-size: 12px;">(wpfhubspot_APIHubspotActionsUser)</h6><h6 style="font-weight: 400;font-size: 12px;">Dirección email</h6>',

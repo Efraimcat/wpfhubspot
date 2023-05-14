@@ -9,14 +9,14 @@
  * that starts the plugin.
  *
  * @link              https://efraim.cat
- * @since             1.0.2
+ * @since             1.0.0
  * @package           Wpfhubspot
  *
  * @wordpress-plugin
  * Plugin Name:       WpfHubspot
  * Plugin URI:        https://github.com/Efraimcat/wpfhubspot/
  * Description:       This is a description of the plugin.
- * Version:           1.0.1
+ * Version:           1.0.3
  * Author:            Efraim Bayarri
  * Author URI:        https://efraim.cat
  * License:           GPL-2.0+
@@ -30,7 +30,7 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-define( 'WPFHUBSPOT_VERSION', '1.0.2' );
+define( 'WPFHUBSPOT_VERSION', '1.0.3' );
 
 function activate_wpfhubspot() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wpfhubspot-activator.php';
