@@ -161,9 +161,9 @@ class Wpfhubspot_Admin {
 		$headers = array( 'Authorization' => 'Bearer '.$this->hubspotkey , 'Content-Type' => 'application/json');
 		$body = '{
 			"properties": {
-				"email": $params['email']
+				"email": $params["email"]
 			}
-		}'
+		}';
 		$request = wp_remote_post( $URLhubspot, array( 'headers' => $headers, 'body' => $body, 'method' => 'POST'  ) );
 		$bodyrequest = json_decode( $request['body'] );
 		$this->custom_logs( $this->dumpPOST($userIP .' - $bodyrequest: '. $bodyrequest ) );
