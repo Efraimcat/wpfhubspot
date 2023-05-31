@@ -56,4 +56,4 @@ add_settings_field(
 register_setting('wpfhubspot_APIHubspot_settings', 'wpfhubspot_APIHubspotKeyHubspot');
 register_setting('wpfhubspot_APIHubspot_settings', 'wpfhubspot_APIHubspotActivaHubspot');
 register_setting('wpfhubspot_APIHubspot_settings', 'wpfhubspot_APIHubspotActionsUser');
-register_setting('wpfhubspot_APIHubspot_settings', 'wpfunos_APIHubspotExlcudedUsers');
+register_setting('wpfhubspot_APIHubspot_settings', 'wpfhubspot_APIHubspotExlcudedUsers');
