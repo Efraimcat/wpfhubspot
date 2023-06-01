@@ -134,21 +134,26 @@ class Wpfhubspot_Admin {
 	*/
 	/**
 	*	 add_action( 'wpfhubspot-contact-OK', array( $this,'wpfhubspotContactOK' ), 10, 1 );
-	*  do_action('wpfhubspot-contact-OK', array( 'userID' => $userID, 'email' => $wpfemail ) );
+	*  do_action('wpfhubspot-contact-OK', array( 'userID' => $userID, 'email' => $wpfemail, 'ok' => 'ok' ) );
 	*/
 	public function wpfhubspotContactOK( $params ){
 		$userIP = apply_filters('wpfunos_userIP','dummy');
+
+		if( $userIP == '79.157.131.56' ) return;
+
 		$userID = $params['userID'];
 		$email = $params['email'];
 		$ok = $params['ok'];
-		$hubspotID = get_post_meta( $userID, 'wpfunos_userHubspotIDusuario', true );
-
+		if( $userID != '0' ) $hubspotID = get_post_meta( $userID, 'wpfunos_userHubspotIDusuario', true );
+		$this->custom_logs( $this->dumpPOST($userIP .' - ==========') );
+		$this->custom_logs( $this->dumpPOST($userIP .' - userID: '. $userID .' Email: '. $email .' hubspotID: '. $hubspotID ) );
 		if( $hubspotID == '' ){
 			$hubspotID = $this->wpfhubspotGetUser( $params );
-			update_post_meta( $userID, 'wpfunos_userHubspotIDusuario', $hubspotID );
+			if( $userID != '0' ) update_post_meta( $userID, 'wpfunos_userHubspotIDusuario', $hubspotID );
 		}
-
-
+		$this->custom_logs( $this->dumpPOST($userIP .' - $hubspotID: '. $hubspotID ) );
+		$params['hubspotID'] = $hubspotID;
+		$confirmacion = $this->wpfhubspotSendOK( $params );
 	}
 
 	/**
@@ -161,32 +166,72 @@ class Wpfhubspot_Admin {
 		$headers = array( 'Authorization' => 'Bearer '.$this->hubspotkey , 'Content-Type' => 'application/json');
 		$body = '{
 			"properties": {
-				"email": $params["email"]
+				"email":  "'.sanitize_text_field( $params["email"] ).'"
 			}
 		}';
 		$request = wp_remote_post( $URLhubspot, array( 'headers' => $headers, 'body' => $body, 'method' => 'POST'  ) );
 		$bodyrequest = json_decode( $request['body'] );
-		$this->custom_logs( $this->dumpPOST($userIP .' - $bodyrequest: '. $bodyrequest ) );
+		//$this->custom_logs( $this->dumpPOST($userIP .' - $bodyrequest: '. apply_filters('wpfunos_dumplog', $bodyrequest  ) ) );
 
 		if( $bodyrequest->status != 'error'){
 			$hubspotID = $bodyrequest->id;
+			$this->custom_logs( $this->dumpPOST($userIP .' - El usuario ya existe: ' .$hubspotID ) );
 		}else{
 			//"message": "Contact already exists. Existing ID: 20825901",
 			//            012345678901234567890123456789012345678901234567890
 			//                      1         2         3         4
 			$hubspotID= substr($bodyrequest->message,37,8);
+			$this->custom_logs( $this->dumpPOST($userIP .' - El usuario no existe: ' .$hubspotID ) );
 		}
-
-		$this->custom_logs( $this->dumpPOST($userIP .' - $hubspotID: '. $hubspotID ) );
 		return $hubspotID;
 	}
 
 	/**
+	* $confirmacion = $this->wpfhubspotSendOK( $params );
+	*
+	*/
+	private function wpfhubspotSendOK( $params ){
+		$userIP = apply_filters('wpfunos_userIP','dummy');
+		$URLhubspot = $this->ContactsUrl. '/' .$params['hubspotID'] ;
+		$headers = array( 'Authorization' => 'Bearer '.$this->hubspotkey , 'Content-Type' => 'application/json');
+		////if( strlen( $params['form_name']  ) > 1 ) $body .= '{"field": "oportunidades_origen",    "value": "'.sanitize_text_field( $params['form_name'] ). '"},';
+		$body = '{
+			"properties": {';
+				if( strlen( $params["email"]  ) > 1 ) $body .= '"email": "'.sanitize_text_field( $params["email"] ). '",';
+				if( strlen( $params["telefono"]  ) > 1 ) $body .= '"telefono": "'.sanitize_text_field( $params["telefono"] ). '",';
+				if( strlen( $params["nombre"]  ) > 1 ) $body .= '"nombre_y_apellidos": "'.sanitize_text_field( $params["nombre"] ). '",';
+				if( strlen( $params["accion"]  ) > 1 ) $body .= '"accion": "'.sanitize_text_field( $params["accion"] ). '",';
+				if( strlen( $params["servicio"]  ) > 1 ) $body .= '"servicio": "'.sanitize_text_field( $params["servicio"] ). '",';
+				if( strlen( $params["precio"]  ) > 1 ) $body .= '"precio": "'.sanitize_text_field( $params["precio"] ). '",';
+				if( strlen( $params["ubicacion"]  ) > 1 ) $body .= '"ubicacion": "'.sanitize_text_field( $params["ubicacion"] ). '",';
+				if( strlen( $params["cuando"]  ) > 1 ) $body .= '"cuando": "'.sanitize_text_field( $params["cuando"] ). '",';
+				if( strlen( $params["destino"]  ) > 1 ) $body .= '"destino": "'.sanitize_text_field( $params["destino"] ). '",';
+				if( strlen( $params["ataud"]  ) > 1 ) $body .= '"ataud": "'.sanitize_text_field( $params["ataud"] ). '",';
+				if( strlen( $params["velatorio"]  ) > 1 ) $body .= '"velatorio": "'.sanitize_text_field( $params["velatorio"] ). '",';
+				if( strlen( $params["ceremonia"]  ) > 1 ) $body .= '"ceremonia": "'.sanitize_text_field( $params["ceremonia"] ). '",';
+				if( strlen( $params["referencia"]  ) > 1 ) $body .= '"referencia": "'.sanitize_text_field( $params["referencia"] ). '",';
+				if( strlen( $params["accion"]  ) > 1 ) $body .= '"accion": "'.sanitize_text_field( $params["accion"] ). '",';
+				$body .= '"politica_de_privacidad": "Checked", "ok":  "'.sanitize_text_field( $params["ok"] ).'", "ip":  "'.sanitize_text_field( $userIP ).'"
+			}
+		}';
+		//$this->custom_logs( $this->dumpPOST($userIP .' - $URLhubspot: '. $URLhubspot ) );
+		//$this->custom_logs( $this->dumpPOST($userIP .' - $body: '. $body ) );
+		$request = wp_remote_post( $URLhubspot, array( 'headers' => $headers, 'body' => $body, 'method' => 'PATCH'  ) );
+		$bodyrequest = json_decode( $request['body'] );
+		if( $bodyrequest->id != ''){
+			$this->custom_logs( $this->dumpPOST($userIP .' - Envio >'.$params["ok"]. '< correcto para usuario: '. $bodyrequest->id ) );
+		}else{
+			$this->custom_logs( $this->dumpPOST($userIP .' - $body: '. apply_filters('wpfunos_dumplog', $body  ) ) );
+			$this->custom_logs( $this->dumpPOST($userIP .' - $bodyrequest: '. apply_filters('wpfunos_dumplog', $bodyrequest  ) ) );
+		}
+	}
+	// [body] = String: '{"status":"error","message":"Contact already exists. Existing ID: 20825901","correlationId":"e77b1289-623c-4cc6-b481-cb0cc803a3ba","category":"CONFLICT"}'
+	/**
 	*{
-  *  "status": "error",
-  *  "message": "Contact already exists. Existing ID: 20825901",
-  *  "correlationId": "dbc97dab-fc56-4bb3-af8b-a8177b35d0d1",
-  *  "category": "CONFLICT"
+	*  "status": "error",
+	*  "message": "Contact already exists. Existing ID: 20825901",
+	*  "correlationId": "dbc97dab-fc56-4bb3-af8b-a8177b35d0d1",
+	*  "category": "CONFLICT"
 	*}
 	*
 	*{
@@ -209,8 +254,6 @@ class Wpfhubspot_Admin {
 	*	"archived": false
 	*}
 	*/
-
-
 
 	/*********************************/
 	/*****  UTILS               ******/
@@ -236,28 +279,28 @@ class Wpfhubspot_Admin {
 	}
 
 	private function dumpPOST($data, $indent=0) {
-    $retval = '';
-    $prefix=\str_repeat(' |  ', $indent);
-    if (\is_numeric($data)) $retval.= "Number: $data";
-    elseif (\is_string($data)) $retval.= "String: '$data'";
-    elseif (\is_null($data)) $retval.= "NULL";
-    elseif ($data===true) $retval.= "TRUE";
-    elseif ($data===false) $retval.= "FALSE";
-    elseif (is_array($data)) {
-      $indent++;
-      foreach($data AS $key => $value) {
-        $retval.= "\r\n$prefix [$key] = ";
-        $retval.= $this->dump($value, $indent);
-      }
-    }
-    elseif (is_object($data)) {
-      $retval.= "Object (".get_class($data).")";
-      $indent++;
-      foreach($data AS $key => $value) {
-        $retval.= "\r\n$prefix $key -> ";
-        $retval.= $this->dump($value, $indent);
-      }
-    }
-    return $retval;
-  }
+		$retval = '';
+		$prefix=\str_repeat(' |  ', $indent);
+		if (\is_numeric($data)) $retval.= "Number: $data";
+		elseif (\is_string($data)) $retval.= "String: '$data'";
+		elseif (\is_null($data)) $retval.= "NULL";
+		elseif ($data===true) $retval.= "TRUE";
+		elseif ($data===false) $retval.= "FALSE";
+		elseif (is_array($data)) {
+			$indent++;
+			foreach($data AS $key => $value) {
+				$retval.= "\r\n$prefix [$key] = ";
+				$retval.= $this->dump($value, $indent);
+			}
+		}
+		elseif (is_object($data)) {
+			$retval.= "Object (".get_class($data).")";
+			$indent++;
+			foreach($data AS $key => $value) {
+				$retval.= "\r\n$prefix $key -> ";
+				$retval.= $this->dump($value, $indent);
+			}
+		}
+		return $retval;
+	}
 }
