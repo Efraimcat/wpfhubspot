@@ -12,6 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 * @subpackage Wpfhubspot/admin
 * @author     Efraim Bayarri <efraim@efraim.cat>
 */
+
+require_once 'class-wpfhubspot-admin-forms.php';
+
 class Wpfhubspot_Admin {
 	private $plugin_name;
 	private $version;
@@ -175,13 +178,13 @@ class Wpfhubspot_Admin {
 
 		if( $bodyrequest->status != 'error'){
 			$hubspotID = $bodyrequest->id;
-			$this->custom_logs( $this->dumpPOST($userIP .' - El usuario ya existe: ' .$hubspotID ) );
+			$this->custom_logs( $this->dumpPOST($userIP .' - El usuario NO existe. Creando nuevo usuario: ' .$hubspotID ) );
 		}else{
 			//"message": "Contact already exists. Existing ID: 20825901",
 			//            012345678901234567890123456789012345678901234567890
 			//                      1         2         3         4
 			$hubspotID= substr($bodyrequest->message,37,8);
-			$this->custom_logs( $this->dumpPOST($userIP .' - El usuario no existe: ' .$hubspotID ) );
+			$this->custom_logs( $this->dumpPOST($userIP .' - El usuario ya existe: ' .$hubspotID ) );
 		}
 		return $hubspotID;
 	}
@@ -203,7 +206,7 @@ class Wpfhubspot_Admin {
 				if( strlen( $params["accion"]  ) > 1 ) $body .= '"accion": "'.sanitize_text_field( $params["accion"] ). '",';
 				if( strlen( $params["servicio"]  ) > 1 ) $body .= '"servicio": "'.sanitize_text_field( $params["servicio"] ). '",';
 				if( strlen( $params["precio"]  ) > 1 ) $body .= '"precio": "'.sanitize_text_field( $params["precio"] ). '",';
-				if( strlen( $params["ubicacion"]  ) > 1 ) $body .= '"ubicacion": "'.sanitize_text_field( $params["ubicacion"] ). '",';
+				if( strlen( $params["donde"]  ) > 1 ) $body .= '"donde": "'.sanitize_text_field( $params["donde"] ). '",';
 				if( strlen( $params["cuando"]  ) > 1 ) $body .= '"cuando": "'.sanitize_text_field( $params["cuando"] ). '",';
 				if( strlen( $params["destino"]  ) > 1 ) $body .= '"destino": "'.sanitize_text_field( $params["destino"] ). '",';
 				if( strlen( $params["ataud"]  ) > 1 ) $body .= '"ataud": "'.sanitize_text_field( $params["ataud"] ). '",';
@@ -219,7 +222,7 @@ class Wpfhubspot_Admin {
 		$request = wp_remote_post( $URLhubspot, array( 'headers' => $headers, 'body' => $body, 'method' => 'PATCH'  ) );
 		$bodyrequest = json_decode( $request['body'] );
 		if( $bodyrequest->id != ''){
-			$this->custom_logs( $this->dumpPOST($userIP .' - Envio >'.$params["ok"]. '< correcto para usuario: '. $bodyrequest->id ) );
+			$this->custom_logs( $this->dumpPOST($userIP .' - Envio >'.$params["ok"]. '< correcto para usuario: '. $bodyrequest->id .' acción: '. $params["accion"] ) );
 		}else{
 			$this->custom_logs( $this->dumpPOST($userIP .' - $body: '. apply_filters('wpfunos_dumplog', $body  ) ) );
 			$this->custom_logs( $this->dumpPOST($userIP .' - $bodyrequest: '. apply_filters('wpfunos_dumplog', $bodyrequest  ) ) );
