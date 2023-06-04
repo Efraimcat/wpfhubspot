@@ -33,8 +33,12 @@ class Wpfhubspot_Admin {
 		add_action('admin_init', array( $this, 'registerAndBuildAPIHubspot' ));
 
 		add_shortcode( 'wpfhubspot-userIP', array( $this, 'wpfhubspotUserIP' ));
+		add_shortcode( 'wpfhubspot-pageUri', array( $this, 'wpfhubspotPageUri' ));
+		add_shortcode( 'wpfhubspot-pageName', array( $this, 'wpfhubspotPageName' ));
 
 		add_action( 'wpfhubspot-contact-OK', array( $this,'wpfhubspotContactOK' ), 10, 1 );
+
+		$this->wpfhubspot_Admin_Forms = new Wpfhubspot_Admin_Forms();
 	}
 
 	public function enqueue_styles() {
@@ -103,6 +107,21 @@ class Wpfhubspot_Admin {
 		$IP = apply_filters('wpfunos_userIP','dummy');
 		return $IP;
 	}
+	/**
+	* add_shortcode( 'wpfhubspot-pageUri', array( $this, 'wpfhubspotPageUri' ));
+	*/
+	public function wpfhubspotPageUri( $atts, $content = "" ) {
+		global $wp;
+		return  home_url($wp->request);
+	}
+	/**
+	* add_shortcode( 'wpfhubspot-pageName', array( $this, 'wpfhubspotPageName' ));
+	*/
+	public function wpfhubspotPageName( $atts, $content = "" ) {
+		return wp_title();
+	}
+
+
 
 	/*********************************/
 	/*****  HOOKS               ******/
