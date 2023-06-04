@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 */
 
 require_once 'class-wpfhubspot-admin-forms.php';
+require_once 'class-wpfhubspot-admin-usuarios.php';
 
 class Wpfhubspot_Admin {
 	private $plugin_name;
@@ -30,15 +31,18 @@ class Wpfhubspot_Admin {
 		$this->PropertiesUrl = 'https://api.hubapi.com/crm/v3/properties';
 
 		add_action('admin_menu', array( $this, 'addPluginAdminMenu' ), 12);
-		add_action('admin_init', array( $this, 'registerAndBuildAPIHubspot' ));
+		add_action('admin_menu', array( $this, 'addPluginAdminMenu' ), 12);
 
+		add_action('admin_init', array( $this, 'registerAndBuildAPIHubspot' ));
 		add_shortcode( 'wpfhubspot-userIP', array( $this, 'wpfhubspotUserIP' ));
 		add_shortcode( 'wpfhubspot-pageUri', array( $this, 'wpfhubspotPageUri' ));
 		add_shortcode( 'wpfhubspot-pageName', array( $this, 'wpfhubspotPageName' ));
 
 		add_action( 'wpfhubspot-contact-OK', array( $this,'wpfhubspotContactOK' ), 10, 1 );
 
+
 		$this->wpfhubspot_Admin_Forms = new Wpfhubspot_Admin_Forms();
+		$this->wpfhubspot_Admin_Usuarios = new Wpfhubspot_Admin_Usuarios();
 	}
 
 	public function enqueue_styles() {
@@ -58,6 +62,7 @@ class Wpfhubspot_Admin {
 	public function addPluginAdminMenu() {
 		//add_submenu_page( string $parent_slug, string $page_title, string $menu_title, string $capability, string $menu_slug, callable $function = '', int $position = null )
 		add_submenu_page( 'wpfunosconfig', esc_html__('Configuración API Hubspot WpFunos', 'wpfhubspot'), esc_html__('API Hubspot', 'wpfhubspot'), 'administrator', 'wpfunos-APIHubspot', array( $this, 'displayPluginAdminAPIHubspot' ));
+		add_submenu_page( 'wpfunosconfig', esc_html__('Usuarios API Hubspot WpFunos', 'wpfhubspot'), esc_html__('Usuarios Hubspot', 'wpfhubspot'), 'administrator', 'wpfunos-UsuariosHubspot', array( $this, 'displayPluginAdminUsuariosHubspot' ));
 	}
 
 	/**
@@ -69,6 +74,18 @@ class Wpfhubspot_Admin {
 			do_action('admin_notices', sanitize_text_field($_GET['error_message']));
 		}
 		require_once 'partials/wpfhubspot-admin-APIHubspot-display.php';
+	}
+	public function displayPluginAdminUsuariosHubspot() {
+		if (isset($_GET['error_message'])) {
+			add_action('admin_notices', array($this,'wpfhubspotSettingsMessages'));
+			do_action('admin_notices', sanitize_text_field($_GET['error_message']));
+		}
+		//$this->masterdatos_list_table->prepare_items();
+		//global $wpdb;
+		//$todos = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM ".$wpdb->prefix."wpf_masterdatos" ));
+
+		//require_once 'partials/wpfhubspot-admin-UsuariosHubspot-display.php';
+
 	}
 
 	public function registerAndBuildAPIHubspot() {

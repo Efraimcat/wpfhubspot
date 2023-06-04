@@ -11,3 +11,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 * @package    WpfClientify
 * @subpackage WpfClientify/admin
 */
+class Wpfhubspot_Admin_Usuarios extends Wpfhubspot_Admin {
+  public function __construct( ) {
+
+  }
+
+}
