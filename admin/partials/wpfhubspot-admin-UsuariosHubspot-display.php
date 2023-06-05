@@ -19,15 +19,14 @@ if ( ! defined( 'ABSPATH' ) ) {
   <h3><?php esc_html_e( 'WpHubspot', 'wpfhubspot' )?></h3>
   <div style="margin-top: 10px;margin-bottom: 10px;"><?php echo date_i18n( 'd F Y H:i:s', current_time( 'timestamp', 0 ) );?></div>
   <div>
-    <strong>Total: </strong><?php //echo number_format_i18n ( count( $todos ) ); ?>
+    <strong>Total: </strong><?php echo number_format_i18n ( count( $todos ) ); ?>
   </div>
-  <div id="wpfhubspot_list_table">
-    <div id="wpfhubspot_list_table-body">
-      <form id="wpfhubspot_list_table-form" method="get">
-        <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
+  <div id="wpfhubspot-list-table">
+    <div id="wpfhubspot-list-table-body">
+      <form id="wpfhubspot-list-table-form" method="get">
         <?php
-        //$this->masterdatos_list_table->search_box( __( 'Buscar', 'wpfhubspot' ), 'wpfhubspot-find');
-        //$this->masterdatos_list_table->display();
+        $this->wpfhubspot_Admin_Usuarios->search_box( __( 'Buscar', 'wpfhubspot' ), 'wpfhubspot-find');
+        $this->wpfhubspot_Admin_Usuarios->display();;
         ?>
       </form>
     </div>

@@ -31,18 +31,15 @@ class Wpfhubspot_Admin {
 		$this->PropertiesUrl = 'https://api.hubapi.com/crm/v3/properties';
 
 		add_action('admin_menu', array( $this, 'addPluginAdminMenu' ), 12);
-		add_action('admin_menu', array( $this, 'addPluginAdminMenu' ), 12);
 
 		add_action('admin_init', array( $this, 'registerAndBuildAPIHubspot' ));
 		add_shortcode( 'wpfhubspot-userIP', array( $this, 'wpfhubspotUserIP' ));
 		add_shortcode( 'wpfhubspot-pageUri', array( $this, 'wpfhubspotPageUri' ));
 		add_shortcode( 'wpfhubspot-pageName', array( $this, 'wpfhubspotPageName' ));
 
-		add_action( 'wpfhubspot-contact-OK', array( $this,'wpfhubspotContactOK' ), 10, 1 );
-
+		add_action( 'wpfhubspot-usuarios', array( $this, 'wpfhubspotusuarios' ), 10, 1 );
 
 		$this->wpfhubspot_Admin_Forms = new Wpfhubspot_Admin_Forms();
-		$this->wpfhubspot_Admin_Usuarios = new Wpfhubspot_Admin_Usuarios();
 	}
 
 	public function enqueue_styles() {
@@ -62,7 +59,9 @@ class Wpfhubspot_Admin {
 	public function addPluginAdminMenu() {
 		//add_submenu_page( string $parent_slug, string $page_title, string $menu_title, string $capability, string $menu_slug, callable $function = '', int $position = null )
 		add_submenu_page( 'wpfunosconfig', esc_html__('Configuración API Hubspot WpFunos', 'wpfhubspot'), esc_html__('API Hubspot', 'wpfhubspot'), 'administrator', 'wpfunos-APIHubspot', array( $this, 'displayPluginAdminAPIHubspot' ));
-		add_submenu_page( 'wpfunosconfig', esc_html__('Usuarios API Hubspot WpFunos', 'wpfhubspot'), esc_html__('Usuarios Hubspot', 'wpfhubspot'), 'administrator', 'wpfunos-UsuariosHubspot', array( $this, 'displayPluginAdminUsuariosHubspot' ));
+		$page_hook = add_submenu_page( 'wpfunosconfig', esc_html__('Usuarios API Hubspot WpFunos', 'wpfhubspot'), esc_html__('Usuarios Hubspot', 'wpfunos'), 'administrator', 'wpfunos-UsuariosHubspot', array( $this, 'displayPluginAdminUsuariosHubspot' ));
+		add_action( 'load-'.$page_hook, array( $this, 'displayPluginAdminUsuariosHubspot_screen_options' ) );
+
 	}
 
 	/**
@@ -75,17 +74,26 @@ class Wpfhubspot_Admin {
 		}
 		require_once 'partials/wpfhubspot-admin-APIHubspot-display.php';
 	}
+
 	public function displayPluginAdminUsuariosHubspot() {
 		if (isset($_GET['error_message'])) {
 			add_action('admin_notices', array($this,'wpfhubspotSettingsMessages'));
 			do_action('admin_notices', sanitize_text_field($_GET['error_message']));
 		}
-		//$this->masterdatos_list_table->prepare_items();
-		//global $wpdb;
-		//$todos = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM ".$wpdb->prefix."wpf_masterdatos" ));
+		$this->wpfhubspot_Admin_Usuarios->prepare_items();
+		global $wpdb;
+		$todos = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM ".$wpdb->prefix."wpf_hubspotusers" ));
+		require_once 'partials/wpfhubspot-admin-UsuariosHubspot-display.php';
+	}
 
-		//require_once 'partials/wpfhubspot-admin-UsuariosHubspot-display.php';
-
+	public function displayPluginAdminUsuariosHubspot_screen_options(){
+		$arguments = array(
+			'label' => __( 'Entradas por página', 'wpfhubspot' ),
+			'default'	=> 25,
+			'option' => 'hubspot_users_per_page'
+		);
+		add_screen_option( 'per_page', $arguments );
+		$this->wpfhubspot_Admin_Usuarios = new Wpfhubspot_Admin_Usuarios();
 	}
 
 	public function registerAndBuildAPIHubspot() {
@@ -138,161 +146,76 @@ class Wpfhubspot_Admin {
 		return wp_title();
 	}
 
-
-
 	/*********************************/
 	/*****  HOOKS               ******/
 	/*********************************/
 	/**
-	*      $params = array(
-	*				'Nombre' => $Nombre,
-	*				'email' => $email,
-	*				'telefono' => $telefono,
-	*				'politica' => $politica,
-	*				'ubicacion' => $ubicacion,
-	*				'cuando' => $cuando,
-	*				'destino' => $destino,
-	*				'ataud' => $ataud,
-	*				'velatorio' => $velatorio,
-	*				'ceremonia' => $ceremonia,
-	*				'Referencia' => $Referencia,
-	*				'Servicio' => $Servicio,
-	*				'Precio' => $Precio,
-	*				'accion' => $accion,
-	*				'ok' => $ok,
-	*				'ip' => $ip,
-	*				'nacimiento' => $nacimiento,
-	*				'financiar' => $financiar,
-	*				'importe' => $importe,
-	*				'plazos_inferior' => $plazos_inferior,
-	*				'plazos_superior' => $plazos_superior
-	*      );
-	*      do_action( 'wpfclientify-process-entry', $params );
-	*			 do_action('wpfhubspot-process-service-entry', array( 'userID' => $userID, 'email' => $wpfemail ) );
-	*      // END Clientify
-	*/
-	/**
-	*	 add_action( 'wpfhubspot-contact-OK', array( $this,'wpfhubspotContactOK' ), 10, 1 );
-	*  do_action('wpfhubspot-contact-OK', array( 'userID' => $userID, 'email' => $wpfemail, 'ok' => 'ok' ) );
-	*/
-	public function wpfhubspotContactOK( $params ){
-		$userIP = apply_filters('wpfunos_userIP','dummy');
-
-		if( $userIP == '79.157.131.56' ) return;
-
-		$userID = $params['userID'];
-		$email = $params['email'];
-		$ok = $params['ok'];
-		if( $userID != '0' ) $hubspotID = get_post_meta( $userID, 'wpfunos_userHubspotIDusuario', true );
-		$this->custom_logs( $this->dumpPOST($userIP .' - ==========') );
-		$this->custom_logs( $this->dumpPOST($userIP .' - userID: '. $userID .' Email: '. $email .' hubspotID: '. $hubspotID ) );
-		if( $hubspotID == '' ){
-			$hubspotID = $this->wpfhubspotGetUser( $params );
-			if( $userID != '0' ) update_post_meta( $userID, 'wpfunos_userHubspotIDusuario', $hubspotID );
-		}
-		$this->custom_logs( $this->dumpPOST($userIP .' - $hubspotID: '. $hubspotID ) );
-		$params['hubspotID'] = $hubspotID;
-		$confirmacion = $this->wpfhubspotSendOK( $params );
-	}
-
-	/**
-	* $this->wpfhubspotSearchUser( $params );
+	*
+	* add_action( 'wpfhubspot-usuarios', array( $this, 'wpfhubspotusuarios' ), 10, 1 );
+	* do_action('wpfhubspot-usuarios',array( 'email' => $email, 'hubspotutk' => $hubspotutk ) );
 	*
 	*/
-	private function wpfhubspotGetUser( $params ){
+	public function wpfhubspotusuarios($record){
 		$userIP = apply_filters('wpfunos_userIP','dummy');
-		$URLhubspot = $this->ContactsUrl;
-		$headers = array( 'Authorization' => 'Bearer '.$this->hubspotkey , 'Content-Type' => 'application/json');
-		$body = '{
-			"properties": {
-				"email":  "'.sanitize_text_field( $params["email"] ).'"
+		$this->custom_logs( $this->dumpPOST($userIP .' - ==========' ) );
+		if( $userIP == '79.157.131.56' && $record['email'] != 'clientes@funos.es'){
+			$this->custom_logs( $this->dumpPOST($userIP .' - ERROR: != clientes@funos.es' ) );
+			return;
+		}
+		if ( $record['hubspotutk'] == '') {
+			$this->custom_logs( $this->dumpPOST($userIP .' - NO hubspotutk' ) );
+			return;
+		}
+		if( !isset ( $record['email'] ) ){
+			$this->custom_logs( $this->dumpPOST($userIP .' - NO email' ) );
+			return;
+		}
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'wpf_hubspotusers';
+
+		$results = $wpdb->get_results( $wpdb->prepare("SELECT * FROM $table_name WHERE email = %s", $record['email'] ), ARRAY_A);
+
+		if ( $results ) {
+			//$wpdb->update( $table, $data, $where );
+			foreach ( $results as $entrada ){
+				$this->custom_logs( $this->dumpPOST($userIP .' - Update wpfhubspotusuarios ' .$record['email']. ' id: ' .$entrada['id'] ) );
+				$wpdb->update(
+					$table_name,
+					array(
+						'ultima' => current_time( 'mysql' ),
+						'ip' => $userIP,
+						'email' => $record['email'],
+						'hubspotutk' => $record['hubspotutk'],
+					),
+					array(
+						'id' => $entrada['id'],
+					)
+				);
 			}
-		}';
-		$request = wp_remote_post( $URLhubspot, array( 'headers' => $headers, 'body' => $body, 'method' => 'POST'  ) );
-		$bodyrequest = json_decode( $request['body'] );
-		//$this->custom_logs( $this->dumpPOST($userIP .' - $bodyrequest: '. apply_filters('wpfunos_dumplog', $bodyrequest  ) ) );
-
-		if( $bodyrequest->status != 'error'){
-			$hubspotID = $bodyrequest->id;
-			$this->custom_logs( $this->dumpPOST($userIP .' - El usuario NO existe. Creando nuevo usuario: ' .$hubspotID ) );
 		}else{
-			//"message": "Contact already exists. Existing ID: 20825901",
-			//            012345678901234567890123456789012345678901234567890
-			//                      1         2         3         4
-			$hubspotID= substr($bodyrequest->message,37,8);
-			$this->custom_logs( $this->dumpPOST($userIP .' - El usuario ya existe: ' .$hubspotID ) );
+			//$wpdb->insert($table,$data);
+			$this->custom_logs( $this->dumpPOST($userIP .' - Insert wpfhubspotusuarios ' .$record['email']) );
+			$wpdb->insert(
+				$table_name,
+				array(
+					'time' => current_time( 'mysql' ),
+					'ultima' => current_time( 'mysql' ),
+					'ip' => $userIP,
+					'email' => $record['email'],
+					'hubspotutk' => $record['hubspotutk'],
+				)
+			);
 		}
-		return $hubspotID;
-	}
 
-	/**
-	* $confirmacion = $this->wpfhubspotSendOK( $params );
-	*
-	*/
-	private function wpfhubspotSendOK( $params ){
-		$userIP = apply_filters('wpfunos_userIP','dummy');
-		$URLhubspot = $this->ContactsUrl. '/' .$params['hubspotID'] ;
-		$headers = array( 'Authorization' => 'Bearer '.$this->hubspotkey , 'Content-Type' => 'application/json');
-		////if( strlen( $params['form_name']  ) > 1 ) $body .= '{"field": "oportunidades_origen",    "value": "'.sanitize_text_field( $params['form_name'] ). '"},';
-		$body = '{
-			"properties": {';
-				if( strlen( $params["email"]  ) > 1 ) $body .= '"email": "'.sanitize_text_field( $params["email"] ). '",';
-				if( strlen( $params["telefono"]  ) > 1 ) $body .= '"telefono": "'.sanitize_text_field( $params["telefono"] ). '",';
-				if( strlen( $params["nombre"]  ) > 1 ) $body .= '"nombre_y_apellidos": "'.sanitize_text_field( $params["nombre"] ). '",';
-				if( strlen( $params["accion"]  ) > 1 ) $body .= '"accion": "'.sanitize_text_field( $params["accion"] ). '",';
-				if( strlen( $params["servicio"]  ) > 1 ) $body .= '"servicio": "'.sanitize_text_field( $params["servicio"] ). '",';
-				if( strlen( $params["precio"]  ) > 1 ) $body .= '"precio": "'.sanitize_text_field( $params["precio"] ). '",';
-				if( strlen( $params["donde"]  ) > 1 ) $body .= '"donde": "'.sanitize_text_field( $params["donde"] ). '",';
-				if( strlen( $params["cuando"]  ) > 1 ) $body .= '"cuando": "'.sanitize_text_field( $params["cuando"] ). '",';
-				if( strlen( $params["destino"]  ) > 1 ) $body .= '"destino": "'.sanitize_text_field( $params["destino"] ). '",';
-				if( strlen( $params["ataud"]  ) > 1 ) $body .= '"ataud": "'.sanitize_text_field( $params["ataud"] ). '",';
-				if( strlen( $params["velatorio"]  ) > 1 ) $body .= '"velatorio": "'.sanitize_text_field( $params["velatorio"] ). '",';
-				if( strlen( $params["ceremonia"]  ) > 1 ) $body .= '"ceremonia": "'.sanitize_text_field( $params["ceremonia"] ). '",';
-				if( strlen( $params["referencia"]  ) > 1 ) $body .= '"referencia": "'.sanitize_text_field( $params["referencia"] ). '",';
-				if( strlen( $params["accion"]  ) > 1 ) $body .= '"accion": "'.sanitize_text_field( $params["accion"] ). '",';
-				$body .= '"politica_de_privacidad": "Checked", "ok":  "'.sanitize_text_field( $params["ok"] ).'", "ip":  "'.sanitize_text_field( $userIP ).'"
-			}
-		}';
-		//$this->custom_logs( $this->dumpPOST($userIP .' - $URLhubspot: '. $URLhubspot ) );
-		//$this->custom_logs( $this->dumpPOST($userIP .' - $body: '. $body ) );
-		$request = wp_remote_post( $URLhubspot, array( 'headers' => $headers, 'body' => $body, 'method' => 'PATCH'  ) );
-		$bodyrequest = json_decode( $request['body'] );
-		if( $bodyrequest->id != ''){
-			$this->custom_logs( $this->dumpPOST($userIP .' - Envio >'.$params["ok"]. '< correcto para usuario: '. $bodyrequest->id .' acción: '. $params["accion"] ) );
-		}else{
-			$this->custom_logs( $this->dumpPOST($userIP .' - $body: '. apply_filters('wpfunos_dumplog', $body  ) ) );
-			$this->custom_logs( $this->dumpPOST($userIP .' - $bodyrequest: '. apply_filters('wpfunos_dumplog', $bodyrequest  ) ) );
-		}
 	}
-	// [body] = String: '{"status":"error","message":"Contact already exists. Existing ID: 20825901","correlationId":"e77b1289-623c-4cc6-b481-cb0cc803a3ba","category":"CONFLICT"}'
-	/**
-	*{
-	*  "status": "error",
-	*  "message": "Contact already exists. Existing ID: 20825901",
-	*  "correlationId": "dbc97dab-fc56-4bb3-af8b-a8177b35d0d1",
-	*  "category": "CONFLICT"
-	*}
-	*
-	*{
-	*	"id": "22055101",
-	*	"properties": {
-	*		"createdate": "2023-05-31T08:46:57.986Z",
-	*		"email": "info@efraim.cat",
-	*		"hs_all_contact_vids": "22055101",
-	*		"hs_email_domain": "efraim.cat",
-	*		"hs_is_contact": "true",
-	*		"hs_is_unworked": "true",
-	*		"hs_lifecyclestage_lead_date": "2023-05-31T08:46:57.986Z",
-	*		"hs_object_id": "22055101",
-	*		"hs_pipeline": "contacts-lifecycle-pipeline",
-	*		"lastmodifieddate": "2023-05-31T08:46:57.986Z",
-	*		"lifecyclestage": "lead"
-	*	},
-	*	"createdAt": "2023-05-31T08:46:57.986Z",
-	*	"updatedAt": "2023-05-31T08:46:57.986Z",
-	*	"archived": false
-	*}
+	/*
+	*time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+	*ultima datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+	*email tinytext DEFAULT '' NOT NULL,
+	*ip tinytext DEFAULT '' NOT NULL,
+	*hubspotutk tinytext DEFAULT '' NOT NULL,
 	*/
+
 
 	/*********************************/
 	/*****  UTILS               ******/
