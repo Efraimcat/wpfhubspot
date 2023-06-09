@@ -24,6 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   <div id="wpfhubspot-list-table">
     <div id="wpfhubspot-list-table-body">
       <form id="wpfhubspot-list-table-form" method="get">
+        <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />
         <?php
         $this->wpfhubspot_Admin_Usuarios->search_box( __( 'Buscar', 'wpfhubspot' ), 'wpfhubspot-find');
         $this->wpfhubspot_Admin_Usuarios->display();;

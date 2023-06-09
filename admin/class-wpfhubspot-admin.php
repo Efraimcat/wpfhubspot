@@ -158,20 +158,40 @@ class Wpfhubspot_Admin {
 	public function wpfhubspotusuarios($record){
 		$userIP = apply_filters('wpfunos_userIP','dummy');
 		$this->custom_logs( $this->dumpPOST($userIP .' - ==========' ) );
-		if( $userIP == '79.157.131.56' && $record['email'] != 'clientes@funos.es'){
-			$this->custom_logs( $this->dumpPOST($userIP .' - ERROR: != clientes@funos.es' ) );
+		//if( $userIP == get_option( 'wpfunos_IpHubspot' ) && $record['email'] != get_option( 'wpfunos_EmailHubspot' )){
+		//if( $userIP == get_option( 'wpfunos_IpHubspot' ) && $record["email"] != get_option( 'wpfunos_EmailHubspot' ) && $record['hubspotutk'] == get_option( 'wpfunos_UtkHubspot' ) ){
+		if( $userIP == get_option( 'wpfunos_IpHubspot' ) && $params["email"] != get_option( 'wpfunos_EmailHubspot' ) &&  stripos(get_option( 'wpfunos_UtkHubspot' ), $record['hubspotutk']) !== false ){
+
+			$this->custom_logs( $this->dumpPOST($userIP .' - ERROR: Entrada incorrecta' ) );
 			return;
 		}
 		if ( $record['hubspotutk'] == '') {
 			$this->custom_logs( $this->dumpPOST($userIP .' - NO hubspotutk' ) );
 			return;
 		}
-		if( !isset ( $record['email'] ) ){
+		if( !isset ( $record['email'] ) || $record['email'] == '' ){
 			$this->custom_logs( $this->dumpPOST($userIP .' - NO email' ) );
 			return;
 		}
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'wpf_hubspotusers';
+
+		$referencias = [];
+		$args = array(
+			'post_type' => 'usuarios_wpfunos',
+			'post_status' => 'publish',
+			'posts_per_page' => -1,
+			'meta_query' => array(
+				array( 'key' => 'wpfunos_userMail', 'value' => $record['email'], 'compare' => '=', ),
+			),
+		);
+		$post_list = get_posts( $args );
+		if( $post_list ){
+			foreach ($post_list as $post ) {
+				$referencias[] = get_post_meta( $post->ID  , 'wpfunos_userReferencia', true );
+			}
+		}
+		$ref = serialize( $referencias );
 
 		$results = $wpdb->get_results( $wpdb->prepare("SELECT * FROM $table_name WHERE email = %s", $record['email'] ), ARRAY_A);
 
@@ -186,6 +206,7 @@ class Wpfhubspot_Admin {
 						'ip' => $userIP,
 						'email' => $record['email'],
 						'hubspotutk' => $record['hubspotutk'],
+						'referencias' => $ref,
 					),
 					array(
 						'id' => $entrada['id'],
@@ -203,6 +224,7 @@ class Wpfhubspot_Admin {
 					'ip' => $userIP,
 					'email' => $record['email'],
 					'hubspotutk' => $record['hubspotutk'],
+					'referencias' => $ref,
 				)
 			);
 		}

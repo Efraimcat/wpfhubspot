@@ -23,6 +23,7 @@ class Wpfhubspot_Admin_Usuarios extends WP_List_Table {
       'ip'	       => __( 'IP', 'wpfunos' ),
       'email'      => __( 'email', 'wpfunos' ),
       'hubspotutk' => __( 'hubspotutk', 'wpfunos' ),
+      'referencias'=> __( 'referencias', 'wpfunos' ),
     );
     return $table_columns;
   }
@@ -41,7 +42,7 @@ class Wpfhubspot_Admin_Usuarios extends WP_List_Table {
     return $sortable = array(
       'time'       => 'time',
       'ultima'	   => 'ultima',
-      'ip'	       => 'ip',
+      'ip'	       => array( 'INET_ATON(ip)', 'asc' ),
       'email'      => 'email',
       'hubspotutk' => 'hubspotutk',
     );
@@ -118,7 +119,7 @@ class Wpfhubspot_Admin_Usuarios extends WP_List_Table {
     //$user_query = "SELECT * FROM $wpdb_table ORDER BY id DESC";
     $user_query = "SELECT * FROM $wpdb_table WHERE 1=1";
 
-    //$user_query = $this->procesar_args( $user_query );
+    $user_query = $this->procesar_args( $user_query );
 
     //$user_query .= ' ORDER BY id DESC';
     $user_query .= ' ORDER BY ' .$orderby. ' ' .$order;
@@ -136,7 +137,15 @@ class Wpfhubspot_Admin_Usuarios extends WP_List_Table {
   */
   public function column_default( $item, $column_name ) {
     switch ( $column_name ) {
-      case 'referer': return substr( $item[$column_name],0,50 );
+      case 'referer': return substr( $item[$column_name],0,50 );break;
+      case 'referencias':
+      $ref = unserialize( $item[$column_name] );
+      $referencia = '';
+      foreach ($ref as $key => $value) {
+        $referencia .= $value .', ';
+      }
+      return $referencia;
+      break;
       default: return $item[$column_name];
     }
   }
@@ -145,18 +154,138 @@ class Wpfhubspot_Admin_Usuarios extends WP_List_Table {
   *
   */
   public function procesar_args( $user_query ){
+    if (!empty($_REQUEST['d'])) {
+      $search = $_REQUEST['d'];
+      $year = substr($search,0,4);
+      $month = substr($search,4,2);
+      $day = substr($search,6,2);
 
+      if(!empty($year)){
+        $user_query .= ' And YEAR(time)="' . $year . '"';
+      }
+      if(!empty($month)){
+        $user_query .= ' And MONTH(time)="' . $month . '"';
+      }
+      if(!empty($day)){
+        $user_query .= ' And DAY(time)="' . $day . '"';
+      }
+
+    }
+    if (!empty($_REQUEST['m']) && empty($_REQUEST['d']) ) {
+      $search = $_REQUEST['m'];
+      $year = substr($search,0,4);
+      $month = substr($search,4,2);
+
+      if(!empty($year)){
+        $user_query .= ' And YEAR(time)="' . $year . '"';
+      }
+      if(!empty($month)){
+        $user_query .= ' And MONTH(time)="' . $month . '"';
+      }
+    }
+    if (!empty($_REQUEST['a'])) {
+      $search = $_REQUEST['a'];
+      $year = substr($search,0,4);
+      $month = substr($search,4,2);
+      $day = substr($search,6,2);
+
+      if(!empty($year)){
+        $user_query .= ' And YEAR(ultima)="' . $year . '"';
+      }
+      if(!empty($month)){
+        $user_query .= ' And MONTH(ultima)="' . $month . '"';
+      }
+      if(!empty($day)){
+        $user_query .= ' And DAY(ultima)="' . $day . '"';
+      }
+    }
     return $user_query;
-    /*
-    *
-    * nombre            Nombre
-    * defuncion         Fecha defunción                 m-d
-    * velatorio         Velatorio (tanatorio)           v
-    * velatorio_inicio  Velatorio fecha y hora Inicio   a
-    * velatorio_final   Velatorio fecha y hora final    b
-    * ceremonia         Ceremonia (tanatorio)           c
-    * ceremonia_fecha   Ceremonia fecha y hora inicio   e
-    *
-    */
   }
+
+  /*
+  *
+  * https://wordpress.stackexchange.com/questions/223552/how-to-create-custom-filter-options-in-wp-list-table
+  *
+  */
+  public function extra_tablenav( $which ) {
+    switch ( $which ) {
+      case 'top':
+      // Your html code to output
+      global $wpdb, $wp_locale;
+      $months = $wpdb->get_results( $wpdb->prepare( "SELECT DISTINCT YEAR( time ) AS year, MONTH( time ) AS month FROM ".$wpdb->prefix."wpf_hubspotusers WHERE 1 = 1 ORDER BY time DESC" ));
+      $days = $wpdb->get_results( $wpdb->prepare( "SELECT DISTINCT YEAR( time ) AS year, MONTH( time ) AS month, DAY( time ) AS day FROM ".$wpdb->prefix."wpf_hubspotusers WHERE 1 = 1 ORDER BY time DESC" ));
+      $ultima = $wpdb->get_results( $wpdb->prepare( "SELECT DISTINCT YEAR( ultima ) AS year, MONTH( ultima ) AS month, DAY( ultima ) AS day FROM ".$wpdb->prefix."wpf_hubspotusers WHERE 1 = 1 ORDER BY ultima DESC" ));
+
+      $m = isset( $_GET['m'] ) ? (int) $_GET['m'] : 0;
+      $d = isset( $_GET['d'] ) ? (int) $_GET['d'] : 0;
+      $a = isset( $_GET['a'] ) ? (int) $_GET['a'] : 0;
+
+      ?>
+      <div class="alignleft actions">
+        <select name="m" id="filter-by-date">
+          <option<?php selected( $m, 0 ); ?> value="0" data-rc="/wp-admin/admin.php?page=wpfunos-UsuariosHubspot">Todos los meses</option>
+          <?php
+          foreach ( $months as $arc_row ) {
+            $month = zeroise( $arc_row->month, 2 );
+            $year  = $arc_row->year;
+            printf(
+              "<option %s value='%s' data-rc='%s'>%s</option>\n",
+              selected( $m, $year . $month, false ),
+              esc_attr( $year . $month ),
+              esc_attr( '/wp-admin/admin.php?page=wpfunos-UsuariosHubspo&m=' . $year . $month ),
+              sprintf( __( '%1$s %2$d' ), $wp_locale->get_month( $month ), $year )
+            );
+          }
+          ?>
+        </select>
+        <select name="d" id="filter-by-day">
+          <option<?php selected( $d, 0 ); ?> value="0" data-rc="">Todos los dias</option>
+          <?php
+          foreach ( $days as $arc_row ) {
+            $day = zeroise( $arc_row->day, 2 );
+            $month = zeroise( $arc_row->month, 2 );
+            $year  = $arc_row->year;
+            printf(
+              "<option %s value='%s' data-rc='%s'>%s</option>\n",
+              selected( $d, $year . $month . $day, false ),
+              esc_attr( $year . $month . $day ),
+              esc_attr( '&d='.$year . $month . $day ),
+              sprintf( __( '%1$s %2$s %3$d' ), $day, $wp_locale->get_month( $month ), $year )
+            );
+          }
+          ?>
+        </select>
+        <select name="a" id="filter-by-ultima">
+          <option<?php selected( $a, 0 ); ?> value="0" data-rc="">Todos los dias última</option>
+          <?php
+          foreach ( $ultima as $arc_row ) {
+            $day = zeroise( $arc_row->day, 2 );
+            $month = zeroise( $arc_row->month, 2 );
+            $year  = $arc_row->year;
+            printf(
+              "<option %s value='%s' data-rc='%s'>%s</option>\n",
+              selected( $a, $year . $month . $day, false ),
+              esc_attr( $year . $month . $day ),
+              esc_attr( '&a='.$year . $month . $day ),
+              sprintf( __( '%1$s %2$s %3$d' ), $day, $wp_locale->get_month( $month ), $year )
+            );
+          }
+          ?>
+        </select>
+
+        <a href="javascript:void(0)" class="button" onclick="window.location.href =
+        jQuery('#filter-by-date option:selected').data('rc') +
+        jQuery('#filter-by-day option:selected').data('rc') +
+        jQuery('#filter-by-ultima option:selected').data('rc') ;
+        ">Filtrar</a>
+      </div>
+      <?php
+      break;
+      case 'bottom':
+      // Your html code to output
+      break;
+    }
+  }
+
+
 }
