@@ -156,13 +156,19 @@ class Wpfhubspot_Admin {
 	*
 	*/
 	public function wpfhubspotusuarios($record){
+		if(	$record["email"] == 'efraim@efraim,cat' ){
+			return;
+		}
 		$userIP = apply_filters('wpfunos_userIP','dummy');
 		$this->custom_logs( $this->dumpPOST($userIP .' - ==========' ) );
-		//if( $userIP == get_option( 'wpfunos_IpHubspot' ) && $record['email'] != get_option( 'wpfunos_EmailHubspot' )){
-		//if( $userIP == get_option( 'wpfunos_IpHubspot' ) && $record["email"] != get_option( 'wpfunos_EmailHubspot' ) && $record['hubspotutk'] == get_option( 'wpfunos_UtkHubspot' ) ){
-		if( $userIP == get_option( 'wpfunos_IpHubspot' ) && $params["email"] != get_option( 'wpfunos_EmailHubspot' ) &&  stripos(get_option( 'wpfunos_UtkHubspot' ), $record['hubspotutk']) !== false ){
 
-			$this->custom_logs( $this->dumpPOST($userIP .' - ERROR: Entrada incorrecta' ) );
+		//if( $userIP == get_option( 'wpfunos_IpHubspot' ) && $params["email"] != get_option( 'wpfunos_EmailHubspot' ) &&  stripos( get_option( 'wpfunos_UtkHubspot' ), $record['hubspotutk'] ) !== false ){
+		if(
+			$record["email"] != get_option( 'wpfunos_EmailHubspot' ) &&
+			stripos( get_option( 'wpfunos_IpHubspot' ), $userIP ) !== false  &&
+			stripos( get_option( 'wpfunos_UtkHubspot' ), $record['hubspotutk'] ) !== false
+		){
+			$this->custom_logs( $this->dumpPOST($userIP .' - Alejandro - Entrada sin cambiar' ) );
 			return;
 		}
 		if ( $record['hubspotutk'] == '') {
