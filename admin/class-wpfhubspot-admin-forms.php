@@ -38,7 +38,9 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin {
     $this->hubspotkey = get_option( 'wpfhubspot_APIHubspotKeyHubspot' );
     $this->names = array(
       'ataud', 'ceremonia', 'cuando', 'destino', 'distancia', 'donde', 'email', 'entrada', 'filtro', 'firstname', 'financiar',
-      'mensaje', 'nacimiento', 'ok', 'phone', 'precio', 'referencia', 'servicio', 'velatorio',
+      'mensaje', 'nacimiento', 'phone', 'precio', 'provincia', 'referencia', 'velatorio',
+
+      'servicio', 'serviciodireccion', 'servicioempresa', 'serviciopoblacion', 'servicioprovincia', 'serviciotelefono', 'serviciotitulo',
 
       'address', 'city', 'state', 'zip',
       'ecommerce_impuestos', 'ecommerce_metodo_pago', 'ecommerce_nif_difunto', 'ecommerce_nif', 'ecommerce_nombre_difunto',
@@ -55,39 +57,22 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin {
   public function wpfhubspotSendForm( $params ){
     if( stripos( get_option( 'wpfunos_HubspotEmailNo' ), $params["email"] ) !== false ) return;
     $userIP = apply_filters('wpfunos_userIP','dummy');
+    if( stripos( get_option( 'wpfunos_IpHubspot' ), $userIP ) !== false ) return;
     //
     $this->custom_logs( $this->dumpPOST($userIP .' - ==========' ) );
     $this->custom_logs( $this->dumpPOST($userIP .' - ==========' ) );
     $this->custom_logs( $this->dumpPOST($userIP .' - wpfhubspotSendForm: ' .$params["email"]. ' utk: ' .$params['hubspotutk']. ' -> ' .$params["accion"] ) );
     //
-    if(
-      $params["email"] != get_option( 'wpfunos_EmailHubspot' ) &&
-      stripos( get_option( 'wpfunos_IpHubspot' ), $userIP ) !== false  &&
-      stripos( get_option( 'wpfunos_UtkHubspot' ), $params['hubspotutk'] ) !== false
-    ){
+    if( stripos( get_option( 'wpfunos_IpHubspot' ), $userIP ) !== false ){
       if ( is_user_logged_in() ) {
-        $this->custom_logs( $this->dumpPOST($userIP .' - wpfhubspotSendForm: Alejandro conectado.' ) );
+        $this->custom_logs( $this->dumpPOST($userIP .' - wpfhubspotSendForm: Colaborador conectado.' ) );
       }else{
-        $this->custom_logs( $this->dumpPOST($userIP .' - wpfhubspotSendForm: Alejandro sin conectar.' ) );
-      }
-      $this->custom_logs( $this->dumpPOST($userIP .' - Entrada ' .get_option( 'wpfunos_IpHubspot' ). '. utk: ' .$params['hubspotutk'] ) );
-      global $wpdb;
-      $table_name = $wpdb->prefix . 'wpf_hubspotusers';
-      $results = $wpdb->get_results( $wpdb->prepare("SELECT * FROM $table_name WHERE email = %s", $params["email"] ), ARRAY_A);
-      if ( $results ) {
-        foreach ( $results as $entrada ){
-          $params['hubspotutk'] = $entrada['hubspotutk'];
-          $this->custom_logs( $this->dumpPOST($userIP .' - Cambio a hubspotutk guardado. ' .$entrada['hubspotutk'] ) );
-        }
-      }else{
-        $this->custom_logs( $this->dumpPOST($userIP .' - ERROR: No tenemos hubspotutk guardado.' ) );
-        $this->wpfhubspotCreateContact( $params );
-        return;
+        $this->custom_logs( $this->dumpPOST($userIP .' - wpfhubspotSendForm: Colaborador sin conectar.' ) );
       }
     }
     //
     if ( $params['hubspotutk'] == '') {
-      $this->custom_logs( $this->dumpPOST($userIP .' - NO hubspotutk' ) );
+      $this->custom_logs( $this->dumpPOST($userIP .' - NO hubspotutk (pruebas ->) fe23' .apply_filters('wpfunos_generate_random_string', 28 ) ) );
       $this->wpfhubspotCreateContact( $params );
       return;
     }
@@ -124,7 +109,9 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin {
   * Usuarios que llegan sin hubspotutk.
   */
   public function wpfhubspotCreateContact( $params ){
+    if( stripos( get_option( 'wpfunos_HubspotEmailNo' ), $params["email"] ) !== false ) return;
     $userIP = apply_filters('wpfunos_userIP','dummy');
+    if( stripos( get_option( 'wpfunos_IpHubspot' ), $userIP ) !== false ) return;
     $this->custom_logs( $this->dumpPOST($userIP .' - ==========' ) );
     $this->custom_logs( $this->dumpPOST($userIP .' - wpfhubspotCreateContact: ' .$params["email"] ). ' -> ' .$params["accion"] );
 
@@ -138,20 +125,15 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin {
     $body .= ' "ip": "' .sanitize_text_field( $userIP ). '",'  ;
     $body .= ' "hs_legal_basis": "Freely given consent from contact"}}'  ;
 
-    $this->custom_logs( $this->dumpPOST($userIP .' - $body: '. apply_filters('wpfunos_dumplog', $body  ) ) );
+    //$this->custom_logs( $this->dumpPOST($userIP .' - $body: '. apply_filters('wpfunos_dumplog', $body  ) ) );
     $request = wp_remote_post( $URLhubspot, array( 'headers' => $headers, 'body' => $body, 'method' => 'POST'  ) );
-    $bodyrequest = json_decode( $request['body'] );
-    $this->custom_logs( $this->dumpPOST($userIP .' - $bodyrequest nuevo contacto: Hubspot id: ' .$bodyrequest['id'] ) );
 
     //"message": "Contact already exists. Existing ID: 20825901",
     //            01234567890123456789012345678901234567890
     //                      1         2         3      ^
-    //substr("abcdef", 2, -1);  // returns "cde"
     if( $bodyrequest['category'] === 'CONFLICT'){
       $contactID = substr ( $bodyrequest['message'], 37 );
       $request = wp_remote_post( $URLhubspot.$contactID, array( 'headers' => $headers, 'body' => $body, 'method' => 'PATCH' ) );
-      $bodyrequest = json_decode( $request['body'] );
-      $this->custom_logs( $this->dumpPOST($userIP .' - $bodyrequest crear contacto: Hubspot id: ' .$bodyrequest['id'] ) );
     }
   }
 

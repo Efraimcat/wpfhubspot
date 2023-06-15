@@ -144,7 +144,7 @@ class Wpfhubspot_Admin_Usuarios extends WP_List_Table {
       foreach ($ref as $key => $value) {
         $referencia .= $value .', ';
       }
-      return $referencia;
+      return  substr( $referencia, 0, 200 );
       break;
       default: return $item[$column_name];
     }
