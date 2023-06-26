@@ -83,7 +83,7 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin {
       $colaborador = $current_user->display_name;
       $userid = get_current_user_id();
       $params['hubspotutk'] = 'fe23'.apply_filters('wpfunos_generate_random_string', 28 );
-      $this->custom_logs( $this->dumpPOST($userIP .' - Colaborador: ' .$userid. ' (' .$colaborador. ') UTK: ' .$params['hubspotutk'] ) );
+      $this->custom_logs( $this->dumpPOST( $userIP .' - Colaborador: ' .$userid. ' (' .$colaborador. ') UTK: ' .$params['hubspotutk'] ) );
     }
     //
     $formGuid = '482e3e8e-3001-477a-aa47-aab334f837b8';
@@ -97,7 +97,7 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin {
     $date = new DateTimeImmutable();
     $URLhubspot = $this->FormsUrl . $formGuid ;
     $headers = array( 'Authorization' => 'Bearer '.$this->hubspotkey , 'Content-Type' => 'application/json');
-    $body = '{ "submittedAt": "'.(int)$date->format('Uv').'","fields": ['; //'}'
+    $body = '{ "submittedAt": "'.(int)$date->format('Uv').'","fields": [';
     foreach ($this->names as $nombre) {
       $valor = sanitize_text_field( str_replace( array( "\'" ), ' ', $params[$nombre] ) );
       if( strlen( $params[$nombre]  ) > 1 ) $body .= '{"objectTypeId": "0-1", "name": "' .$nombre. '","value": "' .$valor. '"},';
