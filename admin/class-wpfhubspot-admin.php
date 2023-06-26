@@ -156,29 +156,25 @@ class Wpfhubspot_Admin {
 	*
 	*/
 	public function wpfhubspotusuarios($record){
-		if(	$record["email"] == 'efraim@efraim,cat' ){
-			return;
-		}
+		if( stripos( get_option( 'wpfunos_HubspotEmailNo' ), $record["email"] ) !== false ) return;
 		$userIP = apply_filters('wpfunos_userIP','dummy');
-		$this->custom_logs( $this->dumpPOST($userIP .' - ==========' ) );
 
-		//if( $userIP == get_option( 'wpfunos_IpHubspot' ) && $params["email"] != get_option( 'wpfunos_EmailHubspot' ) &&  stripos( get_option( 'wpfunos_UtkHubspot' ), $record['hubspotutk'] ) !== false ){
-		if(
-			$record["email"] != get_option( 'wpfunos_EmailHubspot' ) &&
-			stripos( get_option( 'wpfunos_IpHubspot' ), $userIP ) !== false  &&
-			stripos( get_option( 'wpfunos_UtkHubspot' ), $record['hubspotutk'] ) !== false
-		){
-			$this->custom_logs( $this->dumpPOST($userIP .' - Alejandro - Entrada sin cambiar' ) );
+		if(	stripos( get_option( 'wpfunos_IpHubspot' ), $userIP ) !== false ){
+			//$this->custom_logs( $this->dumpPOST($userIP .' - ==========' ) );
+			//$this->custom_logs( $this->dumpPOST($userIP .' - wpfhubspotusuarios: Colaborador - Entrada sin cambiar' ) );
 			return;
 		}
 		if ( $record['hubspotutk'] == '') {
-			$this->custom_logs( $this->dumpPOST($userIP .' - NO hubspotutk' ) );
-			return;
+			$record['hubspotutk'] = 'fe23'.apply_filters('wpfunos_generate_random_string', 28 );
+			//$this->custom_logs( $this->dumpPOST($userIP .' - ==========' ) );
+			//$this->custom_logs( $this->dumpPOST($userIP .' - wpfhubspotusuarios: NO hubspotutk:  Nuevo: ' .$record['hubspotutk'] ) );
 		}
 		if( !isset ( $record['email'] ) || $record['email'] == '' ){
-			$this->custom_logs( $this->dumpPOST($userIP .' - NO email' ) );
+			//$this->custom_logs( $this->dumpPOST($userIP .' - ==========' ) );
+			//$this->custom_logs( $this->dumpPOST($userIP .' - wpfhubspotusuarios: NO email' ) );
 			return;
 		}
+
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'wpf_hubspotusers';
 
@@ -204,7 +200,7 @@ class Wpfhubspot_Admin {
 		if ( $results ) {
 			//$wpdb->update( $table, $data, $where );
 			foreach ( $results as $entrada ){
-				$this->custom_logs( $this->dumpPOST($userIP .' - Update wpfhubspotusuarios ' .$record['email']. ' id: ' .$entrada['id'] ) );
+				//$this->custom_logs( $this->dumpPOST($userIP .' - Update wpfhubspotusuarios ' .$record['email']. ' id: ' .$entrada['id'] ) );
 				$wpdb->update(
 					$table_name,
 					array(
@@ -221,7 +217,7 @@ class Wpfhubspot_Admin {
 			}
 		}else{
 			//$wpdb->insert($table,$data);
-			$this->custom_logs( $this->dumpPOST($userIP .' - Insert wpfhubspotusuarios ' .$record['email']) );
+			//$this->custom_logs( $this->dumpPOST($userIP .' - Insert wpfhubspotusuarios ' .$record['email']) );
 			$wpdb->insert(
 				$table_name,
 				array(

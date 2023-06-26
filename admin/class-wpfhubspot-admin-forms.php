@@ -57,7 +57,6 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin {
   public function wpfhubspotSendForm( $params ){
     if( stripos( get_option( 'wpfunos_HubspotEmailNo' ), $params["email"] ) !== false ) return;
     $userIP = apply_filters('wpfunos_userIP','dummy');
-    if( stripos( get_option( 'wpfunos_IpHubspot' ), $userIP ) !== false ) return;
     //
     $this->custom_logs( $this->dumpPOST($userIP .' - ==========' ) );
     $this->custom_logs( $this->dumpPOST($userIP .' - ==========' ) );
@@ -72,9 +71,19 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin {
     }
     //
     if ( $params['hubspotutk'] == '') {
-      $this->custom_logs( $this->dumpPOST($userIP .' - NO hubspotutk (pruebas ->) fe23' .apply_filters('wpfunos_generate_random_string', 28 ) ) );
-      $this->wpfhubspotCreateContact( $params );
-      return;
+      $params['hubspotutk'] = 'fe23'.apply_filters('wpfunos_generate_random_string', 28 );
+      $this->custom_logs( $this->dumpPOST($userIP .' - NO hubspotutk:  Nuevo: ' .$params['hubspotutk'] ) );
+    }
+    //
+    $userid = 0;
+    $colaborador = '';
+    if ( is_user_logged_in() && current_user_can( 'funos_colaborador' ) ){
+      global $current_user;
+      wp_get_current_user();
+      $colaborador = $current_user->display_name;
+      $userid = get_current_user_id();
+      $params['hubspotutk'] = 'fe23'.apply_filters('wpfunos_generate_random_string', 28 );
+      $this->custom_logs( $this->dumpPOST($userIP .' - Colaborador: ' .$userid. ' (' .$colaborador. ') UTK: ' .$params['hubspotutk'] ) );
     }
     //
     $formGuid = '482e3e8e-3001-477a-aa47-aab334f837b8';
@@ -89,9 +98,12 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin {
     $URLhubspot = $this->FormsUrl . $formGuid ;
     $headers = array( 'Authorization' => 'Bearer '.$this->hubspotkey , 'Content-Type' => 'application/json');
     $body = '{ "submittedAt": "'.(int)$date->format('Uv').'","fields": ['; //'}'
-    foreach ($this->names as $value) {
-      if( strlen( $params[$value]  ) > 1 ) $body .= '{"objectTypeId": "0-1", "name": "' .$value. '","value": "' .sanitize_text_field( $params[$value] ). '"},';
+    foreach ($this->names as $nombre) {
+      $valor = sanitize_text_field( str_replace( array( "\'" ), ' ', $params[$nombre] ) );
+      if( strlen( $params[$nombre]  ) > 1 ) $body .= '{"objectTypeId": "0-1", "name": "' .$nombre. '","value": "' .$valor. '"},';
     }
+    if( strlen( $colaborador ) > 1 ) $body .= '{"objectTypeId": "0-1", "name": "colaborador","value": "' .$colaborador. '"},';
+    $body .= '{"objectTypeId": "0-1", "name": "userid","value": "' .$userid. '"},';
     $body .= '{"objectTypeId": "0-1", "name": "accion","value": "' .sanitize_text_field( $params["accion"] ). '"},';
     $body .= '{"objectTypeId": "0-1", "name": "ip","value": "'     .sanitize_text_field( $userIP ).           '"}],';
     $body .= '"context": { "hutk": "' .$params['hubspotutk']. '", "pageUri": "' .$params['pageUri']. '", "pageName": "' .$params['pageId']. '", "ipAddress": "' .sanitize_text_field( $userIP ). '" },';
@@ -105,37 +117,6 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin {
     $this->custom_logs( $this->dumpPOST($userIP .' - $bodyrequest: '. apply_filters('wpfunos_dumplog', $bodyrequest  ) ) );
   }
 
-  /**
-  * Usuarios que llegan sin hubspotutk.
-  */
-  public function wpfhubspotCreateContact( $params ){
-    if( stripos( get_option( 'wpfunos_HubspotEmailNo' ), $params["email"] ) !== false ) return;
-    $userIP = apply_filters('wpfunos_userIP','dummy');
-    if( stripos( get_option( 'wpfunos_IpHubspot' ), $userIP ) !== false ) return;
-    $this->custom_logs( $this->dumpPOST($userIP .' - ==========' ) );
-    $this->custom_logs( $this->dumpPOST($userIP .' - wpfhubspotCreateContact: ' .$params["email"] ). ' -> ' .$params["accion"] );
-
-    $URLhubspot = $this->CreateUrl ;
-    $headers = array( 'Authorization' => 'Bearer '.$this->hubspotkey , 'Content-Type' => 'application/json');
-    $body = '{"properties": {'; //'}'
-    foreach ($this->names as $value) {
-      if( strlen( $params[$value] ) > 1 ) $body .= ' "' .$value. '": "' .sanitize_text_field( $params[$value] ). '",' ;
-    }
-    $body .= ' "accion": "' .sanitize_text_field( $params["accion"] ). '",'  ;
-    $body .= ' "ip": "' .sanitize_text_field( $userIP ). '",'  ;
-    $body .= ' "hs_legal_basis": "Freely given consent from contact"}}'  ;
-
-    //$this->custom_logs( $this->dumpPOST($userIP .' - $body: '. apply_filters('wpfunos_dumplog', $body  ) ) );
-    $request = wp_remote_post( $URLhubspot, array( 'headers' => $headers, 'body' => $body, 'method' => 'POST'  ) );
-
-    //"message": "Contact already exists. Existing ID: 20825901",
-    //            01234567890123456789012345678901234567890
-    //                      1         2         3      ^
-    if( $bodyrequest['category'] === 'CONFLICT'){
-      $contactID = substr ( $bodyrequest['message'], 37 );
-      $request = wp_remote_post( $URLhubspot.$contactID, array( 'headers' => $headers, 'body' => $body, 'method' => 'PATCH' ) );
-    }
-  }
 
   /*********************************/
   /*****  UTILS               ******/
