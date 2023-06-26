@@ -61,7 +61,6 @@ class Wpfhubspot_Admin {
 		add_submenu_page( 'wpfunosconfig', esc_html__('Configuración API Hubspot WpFunos', 'wpfhubspot'), esc_html__('API Hubspot', 'wpfhubspot'), 'administrator', 'wpfunos-APIHubspot', array( $this, 'displayPluginAdminAPIHubspot' ));
 		$page_hook = add_submenu_page( 'wpfunosconfig', esc_html__('Usuarios API Hubspot WpFunos', 'wpfhubspot'), esc_html__('Usuarios Hubspot', 'wpfunos'), 'administrator', 'wpfunos-UsuariosHubspot', array( $this, 'displayPluginAdminUsuariosHubspot' ));
 		add_action( 'load-'.$page_hook, array( $this, 'displayPluginAdminUsuariosHubspot_screen_options' ) );
-
 	}
 
 	/**
