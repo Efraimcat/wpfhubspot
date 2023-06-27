@@ -32,10 +32,10 @@ class Wpfhubspot_Admin {
 
 		add_action('admin_menu', array( $this, 'addPluginAdminMenu' ), 12);
 
-		add_action('admin_init', array( $this, 'registerAndBuildAPIHubspot' ));
-		add_shortcode( 'wpfhubspot-userIP', array( $this, 'wpfhubspotUserIP' ));
-		add_shortcode( 'wpfhubspot-pageUri', array( $this, 'wpfhubspotPageUri' ));
-		add_shortcode( 'wpfhubspot-pageName', array( $this, 'wpfhubspotPageName' ));
+		add_action('admin_init', array( $this, 'registerAndBuildAPIHubspot' ) );
+		add_shortcode( 'wpfhubspot-userIP', array( $this, 'wpfhubspotUserIP' ) );
+		add_shortcode( 'wpfhubspot-pageUri', array( $this, 'wpfhubspotPageUri' ) );
+		add_shortcode( 'wpfhubspot-pageName', array( $this, 'wpfhubspotPageName' ) );
 
 		add_action( 'wpfhubspot-usuarios', array( $this, 'wpfhubspotusuarios' ), 10, 1 );
 
