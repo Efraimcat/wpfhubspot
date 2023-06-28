@@ -1,15 +1,14 @@
 <?php
 
 /**
- * Provide a admin area view for the plugin
+ * The admin-specific functionality of the plugin.
  *
- * This file is used to markup the admin-facing aspects of the plugin.
- *
- * @link       https://efraim.cat
+ * @link       https://github.com/Efraimcat/wpfhubspot/
  * @since      1.0.0
  *
- * @package    Wpfhubspot
- * @subpackage Wpfhubspot/admin/partials
+ * @package
+ * @subpackage wpfhubspot/admin/partials
+ * @author     Efraim Bayarri <efraim@efraim.cat>
  */
 ?>
 
