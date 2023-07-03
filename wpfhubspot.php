@@ -9,7 +9,7 @@
  * Plugin Name:       WpfHubspot
  * Plugin URI:        https://github.com/Efraimcat/wpfhubspot/
  * Description:       Funcionalidades para funos.es. Conector Hubspot
- * Version:           1.3.1
+ * Version:           1.3.2
  * Author:            Efraim Bayarri
  * Author URI:        https://efraim.cat
  * License:           GPL-2.0+
@@ -23,7 +23,7 @@ if (!defined('WPINC')) {
 	die;
 }
 
-define('WPFHUBSPOT_VERSION', '1.3.1');
+define('WPFHUBSPOT_VERSION', '1.3.2');
 
 function activate_wpfhubspot()
 {

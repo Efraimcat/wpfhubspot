@@ -173,7 +173,9 @@ class Wpfhubspot_Admin
 		if (stripos(get_option('wpfunos_HubspotEmailNo'), $record["email"]) !== false) return;
 		$userIP = apply_filters('wpfunos_userIP', 'dummy');
 
-		if (stripos(get_option('wpfunos_IpHubspot'), $userIP) !== false) {
+		$userid = 0;
+    $colaborador = '';
+    if (is_user_logged_in() && current_user_can('funos_colaborador')) {
 			//$this->custom_logs( $this->dumpPOST($userIP .' - ==========' ) );
 			//$this->custom_logs( $this->dumpPOST($userIP .' - wpfhubspotusuarios: Colaborador - Entrada sin cambiar' ) );
 			return;
@@ -291,14 +293,14 @@ class Wpfhubspot_Admin
 			$indent++;
 			foreach ($data as $key => $value) {
 				$retval .= "\r\n$prefix [$key] = ";
-				$retval .= $this->dump($value, $indent);
+				$retval .= $this->dumpPOST($value, $indent);
 			}
 		} elseif (is_object($data)) {
 			$retval .= "Object (" . get_class($data) . ")";
 			$indent++;
 			foreach ($data as $key => $value) {
 				$retval .= "\r\n$prefix $key -> ";
-				$retval .= $this->dump($value, $indent);
+				$retval .= $this->dumpPOST($value, $indent);
 			}
 		}
 		return $retval;

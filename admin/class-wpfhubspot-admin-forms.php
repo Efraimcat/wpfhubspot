@@ -65,21 +65,13 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin
     $this->custom_logs($this->dumpPOST($userIP . ' - =========='));
     $this->custom_logs($this->dumpPOST($userIP . ' - wpfhubspotSendForm: ' . $params["email"] . ' utk: ' . $params['hubspotutk'] . ' -> ' . $params["accion"]));
     //
-    if (stripos(get_option('wpfunos_IpHubspot'), $userIP) !== false) {
-      if (is_user_logged_in()) {
-        $this->custom_logs($this->dumpPOST($userIP . ' - wpfhubspotSendForm: Colaborador conectado.'));
-      } else {
-        $this->custom_logs($this->dumpPOST($userIP . ' - wpfhubspotSendForm: Colaborador sin conectar.'));
-      }
-    }
-    //
     if ($params['hubspotutk'] == '') {
       $params['hubspotutk'] = 'fe23' . apply_filters('wpfunos_generate_random_string', 28);
       $this->custom_logs($this->dumpPOST($userIP . ' - NO hubspotutk:  Nuevo: ' . $params['hubspotutk']));
     }
     //
     $userid = 0;
-    $colaborador = '';
+    $colaborador = 'No';
     if (is_user_logged_in() && current_user_can('funos_colaborador')) {
       global $current_user;
       wp_get_current_user();
@@ -105,7 +97,7 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin
       $valor = sanitize_text_field(str_replace(array("\'"), ' ', $params[$nombre]));
       if (strlen($params[$nombre]) > 1) $body .= '{"objectTypeId": "0-1", "name": "' . $nombre . '","value": "' . $valor . '"},';
     }
-    if (strlen($colaborador) > 1) $body .= '{"objectTypeId": "0-1", "name": "colaborador","value": "' . $colaborador . '"},';
+    $body .= '{"objectTypeId": "0-1", "name": "colaborador","value": "' . $colaborador . '"},';
     $body .= '{"objectTypeId": "0-1", "name": "userid","value": "' . $userid . '"},';
     $body .= '{"objectTypeId": "0-1", "name": "accion","value": "' . sanitize_text_field($params["accion"]) . '"},';
     $body .= '{"objectTypeId": "0-1", "name": "ip","value": "'     . sanitize_text_field($userIP) .           '"}],';
@@ -158,14 +150,14 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin
       $indent++;
       foreach ($data as $key => $value) {
         $retval .= "\r\n$prefix [$key] = ";
-        $retval .= $this->dump($value, $indent);
+        $retval .= $this->dumpPOST($value, $indent);
       }
     } elseif (is_object($data)) {
       $retval .= "Object (" . get_class($data) . ")";
       $indent++;
       foreach ($data as $key => $value) {
         $retval .= "\r\n$prefix $key -> ";
-        $retval .= $this->dump($value, $indent);
+        $retval .= $this->dumpPOST($value, $indent);
       }
     }
     return $retval;
