@@ -40,7 +40,7 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin
     $this->hubspotkey = get_option('wpfhubspot_APIHubspotKeyHubspot');
     $this->names = array(
       'ataud', 'ceremonia', 'cuando', 'destino', 'distancia', 'donde', 'email', 'entrada', 'filtro', 'firstname', 'financiar',
-      'mensaje', 'nacimiento', 'phone', 'precio', 'provincia', 'referencia', 'velatorio',
+      'importe', 'mensaje', 'nacimiento', 'phone', 'precio', 'provincia', 'referencia', 'velatorio',
 
       'servicio', 'serviciodireccion', 'servicioempresa', 'serviciopoblacion', 'servicioprovincia', 'serviciotelefono', 'serviciotitulo',
 
@@ -88,6 +88,7 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin
     if ($params['accion'] == 'Te llamamos gratis') $formGuid = '832d7a8a-415c-4c7b-a3cf-c01edcdc4967';
     if ($params['accion'] == 'Te llamamos gratis Landings') $formGuid = '832d7a8a-415c-4c7b-a3cf-c01edcdc4967';
     if ($params['accion'] == 'Asesoramiento gratuito') $formGuid = '832d7a8a-415c-4c7b-a3cf-c01edcdc4967';
+    if ($params['accion'] == 'Formulario pagina financiacion') $formGuid = '91f13f69-946b-4e00-80eb-f706a991561e';
     //
     $date = new DateTimeImmutable();
     $URLhubspot = $this->FormsUrl . $formGuid;
