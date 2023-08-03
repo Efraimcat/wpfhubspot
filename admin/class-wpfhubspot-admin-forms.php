@@ -40,7 +40,7 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin
     $this->hubspotkey = get_option('wpfhubspot_APIHubspotKeyHubspot');
     $this->names = array(
       'ataud', 'ceremonia', 'cuando', 'destino', 'distancia', 'donde', 'email', 'entrada', 'filtro', 'firstname', 'financiar',
-      'importe', 'mensaje', 'nacimiento', 'phone', 'precio', 'provincia', 'referencia', 'velatorio',
+      'importe', 'mensaje', 'nacimiento', 'phone', 'plazos', 'precio', 'provincia', 'referencia', 'velatorio',
 
       'servicio', 'serviciodireccion', 'servicioempresa', 'serviciopoblacion', 'servicioprovincia', 'serviciotelefono', 'serviciotitulo',
 
@@ -96,7 +96,7 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin
     $body = '{ "submittedAt": "' . (int)$date->format('Uv') . '","fields": [';
     foreach ($this->names as $nombre) {
       $valor = sanitize_text_field(str_replace(array("\'"), ' ', $params[$nombre]));
-      if (strlen($params[$nombre]) > 1) $body .= '{"objectTypeId": "0-1", "name": "' . $nombre . '","value": "' . $valor . '"},';
+      if (strlen($params[$nombre]) > 0) $body .= '{"objectTypeId": "0-1", "name": "' . $nombre . '","value": "' . $valor . '"},';
     }
     $body .= '{"objectTypeId": "0-1", "name": "colaborador","value": "' . $colaborador . '"},';
     $body .= '{"objectTypeId": "0-1", "name": "userid","value": "' . $userid . '"},';
