@@ -100,6 +100,7 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin
     }
     $body .= '{"objectTypeId": "0-1", "name": "colaborador","value": "' . $colaborador . '"},';
     $body .= '{"objectTypeId": "0-1", "name": "userid","value": "' . $userid . '"},';
+    $body .= '{"objectTypeId": "0-1", "name": "uri","value": "' . $params["pageUri"] . '"},';
     $body .= '{"objectTypeId": "0-1", "name": "accion","value": "' . sanitize_text_field($params["accion"]) . '"},';
     $body .= '{"objectTypeId": "0-1", "name": "ip","value": "'     . sanitize_text_field($userIP) .           '"}],';
     $body .= '"context": { "hutk": "' . $params['hubspotutk'] . '", "pageUri": "' . $params['pageUri'] . '", "pageName": "' . $params['pageId'] . '", "ipAddress": "' . sanitize_text_field($userIP) . '" },';
