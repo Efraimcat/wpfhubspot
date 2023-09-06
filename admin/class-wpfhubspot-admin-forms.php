@@ -83,6 +83,9 @@ class Wpfhubspot_Admin_Forms extends Wpfhubspot_Admin
     //
     $formGuid = '482e3e8e-3001-477a-aa47-aab334f837b8';
     if (stripos($params['accion'], 'Datos usuario funerarias') !== false) $formGuid = '482e3e8e-3001-477a-aa47-aab334f837b8';
+    if ($params['accion'] == 'Datos usuario funerarias llamamos') $formGuid = '09de3597-4f73-40a1-8aac-eea61a098783';
+    if ($params['accion'] == 'Datos usuario funerarias llamar') $formGuid = '09de3597-4f73-40a1-8aac-eea61a098783';
+    if ($params['accion'] == 'Datos usuario funerarias Presupuesto') $formGuid = '09de3597-4f73-40a1-8aac-eea61a098783';
     if (stripos($params['accion'], 'Datos usuario aseguradoras') !== false) $formGuid = 'cbd958b7-dcf6-415f-a4e8-024bf6c342f3';
     if (stripos($params['accion'], 'ECommerce') !== false) $formGuid = 'f6d6aced-19a1-4d4c-b8c2-78d63a73b518';
     if ($params['accion'] == 'Te llamamos gratis') $formGuid = '832d7a8a-415c-4c7b-a3cf-c01edcdc4967';
